@@ -19,6 +19,7 @@ public class Main {
 
     /**
      * We enter data for further analysis
+     * changes for the new commit
      */
     public static void readData(String fileName) {
         String string = "";
