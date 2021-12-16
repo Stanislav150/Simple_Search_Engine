@@ -1,52 +1,23 @@
 package search;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 public class Main {
     final static Scanner scanner = new Scanner(System.in);
-    static List<String> userData = new ArrayList<>();
-    private static final Map<String, List<Integer>> invertedIndex = new HashMap<>();
     static boolean repeat = true;
+    Searcher searcher = new Searcher();
 
     public static void main(String[] args) {
-        readData(args[1]);
-        while (repeat) menu();
-
+        Main m = new Main();
+        m.searcher.readData(args[1]);
+        while (repeat) m.menu();
     }
 
-    /**
-     * We enter data for further analysis
-     * changes for the new commit
-     */
-    public static void readData(String fileName) {
-        String string = "";
-        try {
-            string = new String(Files.readAllBytes(Paths.get(fileName)));
-        } catch (IOException e) {
-            System.out.println("Cannot read file: " + e.getMessage());
-        }
-        userData = Arrays.asList(string.split("\n"));
-        for (int index = 0; index < userData.size(); index++) {
-            String line = userData.get(index);
-            for (String _key : line.split(" ")) {
-                List<Integer> indexes = new ArrayList<>();
-                String key = _key.toLowerCase();
-                if (invertedIndex.containsKey(key)) invertedIndex.get(key).add(index);
-                else {
-                    indexes.add(index);
-                    invertedIndex.put(key, indexes);
-                }
-            }
-        }
-    }
-    public static void menu() {
+    public void menu() {
         System.out.printf("=== Menu ===%n1. Find a person%n2. Print all people%n0. Exit%n");
         switch (scanner.nextInt()) {
             case 1:
-                findPerson();
+                searchMenu();
                 break;
             case 2:
                 printAllPeople();
@@ -59,8 +30,65 @@ public class Main {
         }
     }
 
+    public void searchMenu() {
+        System.out.println("Select a matching strategy: ALL, ANY, NONE.");
+        String strategy = "";
+        boolean repeat = true;
+        while (repeat) {
+            String line = scanner.nextLine();
+            if (!line.isEmpty()) {
+                strategy = line.toUpperCase(Locale.ROOT);
+                repeat = false;
+            }
+        }
+        switch (strategy) {
+            case "ALL":
+                searcher.setMethod(new allSearchStrategy(searcher));
+                break;
+            case "ANY":
+                searcher.setMethod(new anySearchStrategy(searcher));
+                break;
+            case "NONE":
+                searcher.setMethod(new noneSearchStrategy(searcher));
+                break;
+            default:
+                break;
+        }
+        if (searcher == null) {
+            throw new RuntimeException(
+                    "Unknown strategy type passed. Please, write to the author of the problem.");
+        }
+        searcher.search(searcher.formRequest());
+    }
+
+    public void printAllPeople() {
+        System.out.println("=== List of People ===");
+        searcher.userData.forEach(System.out::println);
+    }
+
+    public static void exit() {
+        System.out.println("Bye!");
+        repeat = false;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+
+
+
     public static void findPerson() {
-        System.out.println("Enter a name or email to search all suitable people.");
+        System.out.println("Query:");
         String request;
         List<Integer> indexes = new ArrayList<>();
         boolean matchWasFound = false;
@@ -87,10 +115,4 @@ public class Main {
         System.out.println("=== List of People ===");
         userData.forEach(System.out::println);
     }
-
-    public static void exit() {
-        System.out.println("Bye!");
-        repeat = false;
-    }
-}
-
+ */
